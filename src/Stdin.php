@@ -51,6 +51,13 @@ class Stdin extends Stream
 
     private function isTty()
     {
-        return (is_resource(STDIN) && function_exists('posix_isatty') && posix_isatty(STDIN));
+        if (is_resource(STDIN)) {
+            $stat = fstat(STDIN);
+            if (isset($stat['mode']) && ($stat['mode'] & 0170000) === 0020000) {
+                // this is a character device (console / TTY)
+                return true;
+            }
+        }
+        return false;
     }
 }
