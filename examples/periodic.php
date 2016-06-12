@@ -8,6 +8,11 @@ $loop = React\EventLoop\Factory::create();
 
 $stdio = new Stdio($loop);
 
+if (!$stdio->isReadable()) {
+    $stdio->end('STDIN closed' . PHP_EOL);
+    exit;
+}
+
 $stdio->getReadline()->setPrompt('> ');
 
 $stdio->writeln('Will print periodic messages until you type "quit" or "exit"');
@@ -19,6 +24,11 @@ $stdio->on('line', function ($line) use ($stdio, $loop, &$timer) {
         $timer->cancel();
         $stdio->end();
     }
+});
+
+$stdio->on('end', function () use ($stdio, &$timer) {
+    $timer->cancel();
+    $stdio->end('STDIN closed');
 });
 
 // add some periodic noise
